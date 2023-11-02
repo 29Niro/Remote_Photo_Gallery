@@ -1,20 +1,23 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 
+import '../../api/image_api_client.dart';
 import '../theme/theme.dart';
+import 'home_screen.dart';
 
 class DetailsScreen extends StatelessWidget {
-  const DetailsScreen({
+  DetailsScreen({
     Key? key,
     required this.url,
-    required this.title,
   }) : super(key: key);
 
   final String url;
-  final String title;
+
+  final client = ImageApiClient();
 
   @override
   Widget build(BuildContext context) {
+    final messanger = ScaffoldMessenger.of(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
@@ -27,11 +30,9 @@ class DetailsScreen extends StatelessWidget {
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(10),
-                child: Image.asset(url),
+                child: Image.network(url),
               ),
             ),
-            const SizedBox(height: 10),
-            Text(title),
             const SizedBox(height: 10),
             Row(
               children: [
@@ -39,8 +40,19 @@ class DetailsScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        side: const BorderSide(
+                            width: 1.0, color: AppColors.primary),
+                        backgroundColor: AppColors.textButtonColor,
+                        foregroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 15),
+                      ),
                       onPressed: () {
-                        Navigator.pop(context);
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const HomeScreen()));
                       },
                       child: const Text('Back'),
                     ),
@@ -50,12 +62,25 @@ class DetailsScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     child: ElevatedButton(
-                      onPressed: () {
-                        // ignore: unnecessary_null_comparison
-                        url != null ? null : null;
-                      },
-                      child: const Text('Delete')
-                    ),
+                      style: ElevatedButton.styleFrom(
+                          side: const BorderSide(
+                              width: 1.0, color: AppColors.accent),
+                          backgroundColor: AppColors.accent,
+                          foregroundColor: AppColors.textButtonColor,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 15),
+                        ),
+                        onPressed: () async {
+                          await client.deleteImage(url).then((value) =>
+                              messanger.showSnackBar(const SnackBar(
+                                  content:
+                                      Text('Image Deleted Successfully'))));
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const HomeScreen()));
+                        },
+                        child: const Text('Delete')),
                   ),
                 ),
               ],

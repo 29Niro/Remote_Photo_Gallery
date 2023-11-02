@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:remote_photo_gallery/src/presentation/theme/app_colors.dart';
 
-import '../../models/photo.dart';
+import '../../api/image_api_client.dart';
 import '../screens/details_screen.dart';
 
 class PhotoGridView extends StatefulWidget {
-  const PhotoGridView({super.key, required this.photoFiles});
-  final List<Photo>? photoFiles;
+  const PhotoGridView({super.key, required this.imageUrls});
+  final List<String>? imageUrls;
 
   @override
   State<PhotoGridView> createState() => _PhotoGridViewState();
 }
 
 class _PhotoGridViewState extends State<PhotoGridView> {
+  List<String> selectedPhotos = [];
 
-  List<Photo> selectedPhotos = [];
+  final client = ImageApiClient();
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +45,9 @@ class _PhotoGridViewState extends State<PhotoGridView> {
                     child: const Text('Unselect All')),
                 IconButton(
                   onPressed: () {
+                    client.deleteImages(selectedPhotos);
                     setState(() {
-                      widget.photoFiles?.removeWhere((photo) {
+                      widget.imageUrls?.removeWhere((photo) {
                         return selectedPhotos.contains(photo);
                       });
                       selectedPhotos = [];
@@ -59,9 +67,9 @@ class _PhotoGridViewState extends State<PhotoGridView> {
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
           ),
-          itemCount: widget.photoFiles?.length,
+          itemCount: widget.imageUrls?.length,
           itemBuilder: (context, index) {
-            final photo = widget.photoFiles?[index];
+            final photo = widget.imageUrls![index];
 
             return GestureDetector(
               onTap: () {
@@ -74,15 +82,12 @@ class _PhotoGridViewState extends State<PhotoGridView> {
                     }
                   });
                 } else {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DetailsScreen(
-                        url: photo.url,
-                        title: photo.title,
-                      ),
-                    ),
-                  );
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => DetailsScreen(
+                                url: photo,
+                              )));
                 }
               },
               onLongPress: () {
@@ -100,7 +105,7 @@ class _PhotoGridViewState extends State<PhotoGridView> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
                       image: DecorationImage(
-                        image: AssetImage(photo!.url),
+                        image: NetworkImage(photo),
                         fit: BoxFit.cover,
                       ),
                     ),
