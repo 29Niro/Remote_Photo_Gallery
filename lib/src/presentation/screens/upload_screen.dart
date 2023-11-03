@@ -50,6 +50,7 @@ class _UploadScreenState extends State<UploadScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: AppColors.primary,
         title: const Text('Upload Image'),
       ),
