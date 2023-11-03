@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:remote_photo_gallery/src/presentation/screens/home_screen.dart';
 
+import '../../api/image_api_client.dart';
 import '../theme/theme.dart';
 
 class UploadScreen extends StatefulWidget {
@@ -15,6 +17,7 @@ class UploadScreen extends StatefulWidget {
 
 class _UploadScreenState extends State<UploadScreen> {
   File? _imageFile;
+  final client = ImageApiClient();
 
   Future<void> _pickImage(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
@@ -25,7 +28,6 @@ class _UploadScreenState extends State<UploadScreen> {
         setState(() {
           File imageFile = File(pickedImage.path);
           _imageFile = imageFile;
-          // print('Image picked.');
         });
       } on FileSystemException catch (_, e) {
         setState(() {
@@ -39,14 +41,16 @@ class _UploadScreenState extends State<UploadScreen> {
       setState(() {
         _imageFile = null;
       });
-      // print('No image selected.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final messanger = ScaffoldMessenger.of(context);
+
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: AppColors.primary,
         title: const Text('Upload Image'),
       ),
@@ -68,8 +72,21 @@ class _UploadScreenState extends State<UploadScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     child: ElevatedButton(
-                      onPressed: () {},
-                      child: const Text('Cancel'),
+                      style: ElevatedButton.styleFrom(
+                        side: const BorderSide(
+                            width: 1.0, color: AppColors.primary),
+                        backgroundColor: AppColors.textButtonColor,
+                        foregroundColor: AppColors.primary,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 15),
+                      ),
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const HomeScreen()));
+                      },
+                      child: const Text('Back'),
                     ),
                   ),
                 ),
@@ -77,8 +94,41 @@ class _UploadScreenState extends State<UploadScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     child: ElevatedButton(
-                      onPressed: () {
-                        _imageFile != null ? Navigator.pop(context) : _showImageSource(context);
+                      style: ElevatedButton.styleFrom(
+                        side: const BorderSide(
+                            width: 1.0, color: AppColors.primary),
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.textButtonColor,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 15),
+                      ),
+                      onPressed: () async {
+                        if (_imageFile != null) {
+                          await client
+                              .uploadImage(_imageFile!)
+                              .then((value) =>
+                                  messanger.showSnackBar(const SnackBar(
+                                    content:
+                                        Text('Image Uploaded Successfully'),
+                                    duration: Duration(seconds: 2),
+                                    backgroundColor: AppColors.success,
+                                  )))
+                              .onError((error, stackTrace) =>
+                                  messanger.showSnackBar(const SnackBar(
+                                    content: Text(
+                                        'Something went wrong. Check your network!'),
+                                    duration: Duration(seconds: 2),
+                                    backgroundColor: AppColors.error,
+                                  )))
+                              .then((value) => setState(() {
+                                    _imageFile = null;
+                                  }));
+                          if (kDebugMode) {
+                            print('Image uploaded.');
+                          }
+                        } else {
+                          _showImageSource(context);
+                        }
                       },
                       child: _imageFile != null
                           ? const Text('Upload Image')
@@ -102,10 +152,7 @@ class _UploadScreenState extends State<UploadScreen> {
           height: 200,
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
           ),
           child: Column(
             children: [
