@@ -28,7 +28,6 @@ class _UploadScreenState extends State<UploadScreen> {
         setState(() {
           File imageFile = File(pickedImage.path);
           _imageFile = imageFile;
-          // print('Image picked.');
         });
       } on FileSystemException catch (_, e) {
         setState(() {
@@ -42,7 +41,6 @@ class _UploadScreenState extends State<UploadScreen> {
       setState(() {
         _imageFile = null;
       });
-      // print('No image selected.');
     }
   }
 
@@ -105,17 +103,25 @@ class _UploadScreenState extends State<UploadScreen> {
                       ),
                       onPressed: () async {
                         if (_imageFile != null) {
-                          await client.uploadImage(_imageFile!).then((value) {
-                            // print('value: $value');
-                            messanger.showSnackBar(const SnackBar(
-                                content: Text('Image Uploaded Successfully')));
-                          }).then((value) => setState(() {
-                                _imageFile = null;
-                              }));
-                          // Navigator.pushReplacement(
-                          //     context,
-                          //     MaterialPageRoute(
-                          //         builder: (context) => const HomeScreen()));
+                          await client
+                              .uploadImage(_imageFile!)
+                              .then((value) =>
+                                  messanger.showSnackBar(const SnackBar(
+                                    content:
+                                        Text('Image Uploaded Successfully'),
+                                    duration: Duration(seconds: 2),
+                                    backgroundColor: AppColors.success,
+                                  )))
+                              .onError((error, stackTrace) =>
+                                  messanger.showSnackBar(const SnackBar(
+                                    content: Text(
+                                        'Something went wrong. Check your network!'),
+                                    duration: Duration(seconds: 2),
+                                    backgroundColor: AppColors.error,
+                                  )))
+                              .then((value) => setState(() {
+                                    _imageFile = null;
+                                  }));
                           if (kDebugMode) {
                             print('Image uploaded.');
                           }
