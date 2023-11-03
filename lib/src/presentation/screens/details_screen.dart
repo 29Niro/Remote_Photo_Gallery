@@ -121,7 +121,7 @@ class DetailsScreen extends StatelessWidget {
             ],
           ),
           content: SizedBox(
-            height: height * 0.15,
+            height: height * 0.16,
             child: Column(
               children: [
                 const Text(
@@ -169,7 +169,7 @@ class DetailsScreen extends StatelessWidget {
                               side: BorderSide(
                                 color: AppColors.primary,
                               )),
-                          minimumSize: const Size(100, 50),
+                          minimumSize: const Size(80, 40),
                         ),
                         child: const Text(
                           'Yes',
@@ -196,7 +196,7 @@ class DetailsScreen extends StatelessWidget {
                               side: BorderSide(
                                 color: AppColors.primary,
                               )),
-                          minimumSize: const Size(100, 50),
+                          minimumSize: const Size(80, 40),
                         ),
                         child: const Text(
                           'No',
